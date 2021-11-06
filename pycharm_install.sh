@@ -70,7 +70,7 @@ else
 	exit 1;
 fi
 
-cd $TEMPDIR
+cd "$TEMPDIR"
 
 # check if the version this script has been asked to install is already installed
 # the professional version does not have 'professional' in its directory name
