@@ -47,21 +47,21 @@ else
 	exit 1;
 fi
 
-# copy file to /tmp or download file from supplied url to /tmp
+# copy file to TEMPDIR or download file from supplied url to TEMPDIR
 FILENAME=''
 if [[ "$1" =~ $MATCHURL ]]
 then
 	FILENAME=$(basename $1 .tar.gz)
 	echo "Command line argument $1 identified as an URL"
-	echo 'Setting download directory to /tmp'
+	echo "Setting download directory to $TEMPDIR"
 	echo "Downloading $FILENAME now..."
-	wget -c -P /tmp $1
+	wget -c -P "$TEMPDIR" $1
 elif [[ "$1" =~ $MATCHPATH ]]
 then
 	echo "Command line argument '$1' identified as an absolute path"
 	FILENAME=$(basename $1 .tar.gz)
-	echo "Copying $FILENAME to /tmp"
-	cp "$1" '/tmp/'	
+	echo "Copying $FILENAME to $TEMPDIR"
+	cp "$1" "$TEMPDIR/"
 else
 	echo "Command line argument $1 NOT identified as either a path or an url"
         echo 'Script must be supplied with:'
@@ -70,7 +70,7 @@ else
 	exit 1;
 fi
 
-cd /tmp
+cd $TEMPDIR
 
 # check if the version this script has been asked to install is already installed
 # the professional version does not have 'professional' in its directory name
