@@ -128,8 +128,15 @@ fi
 
 # Create Application Launcher entry for PyCharm in folder /usr/local/share/applications/
 # mime types found in /etc/mime.types
-DESKTOPFILE="/$TEMPDIR/JetBrains-PyCharm.desktop"
-if [ -d /usr/local/share/applications ]
+SHORTCUTDIR="/usr/local/share/applications"
+DESKTOPFILE="$TEMPDIR/JetBrains-PyCharm.desktop"
+
+if [ ! -d "$SHORTCUTDIR" ]
+then
+	mkdir -p "$SHORTCUTDIR"
+fi
+
+if [ -d "$SHORTCUTDIR" ]
 then
 	if [[ "$FILENAME" =~ 'professional' ]]
 	then
@@ -173,3 +180,4 @@ then
 	echo "$EXISTINGVERSIONS"
 fi
 echo "Current installed version is now $FILENAME and is ready to use"
+echo "It may be necessary to log-out and log-in again for the PyCharm entry in the Applicaiton Menu to become visible"
