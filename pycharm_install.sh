@@ -134,10 +134,7 @@ DESKTOPFILE="$TEMPDIR/JetBrains-PyCharm.desktop"
 if [ ! -d "$SHORTCUTDIR" ]
 then
 	mkdir -p "$SHORTCUTDIR"
-fi
-
-if [ -d "$SHORTCUTDIR" ]
-then
+else
 	if [[ "$FILENAME" =~ 'professional' ]]
 	then
 		NICENAME='PyCharm Professional Edition'
