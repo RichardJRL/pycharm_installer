@@ -25,6 +25,42 @@ else
 	echo 'Excellent, you are running this script as root'
 fi
 
+# Check $TEMPDIR exists else issue warning and exit
+if [ -d "$TEMPDIR" ]
+then
+	# Additionally check $TEMPDIR is writable
+	if [ -w "$TEMPDIR" ]
+	then
+		echo "Temporary directory $TEMPDIR exists and is writable, continuing..."
+	else
+		echo "Temporary directory $TEMPDIR exists but is not writable"
+		echo "Please make it writable and re-run the script"
+		exit 1;
+	fi
+else
+	echo "Temporary directory $TEMPDIR does not exist"
+	echo "Please create it and re-run the script"
+	exit 1;
+fi
+
+# Check $INSTALLDIR exists else issue warning and exit
+if [ -d "$INSTALLDIR" ]
+then
+	# Additionally check $INSTALLDIR is writable
+	if [ -w "$INSTALLDIR" ]
+	then
+		echo "Installation directory $INSTALLDIR exists and is writable, continuing..."
+	else
+		echo "Installation directory $INSTALLDIR exists but is not writable"
+		echo "Please make it writable and re-run the script"
+		exit 1;
+	fi
+else
+	echo "Installation directory $INSTALLDIR does not exist"
+	echo "Please create it and re-run the script"
+	exit 1;
+fi
+
 # Check if the script has been supplied with a command line argument
 # If not, exit with a message
 if [ -z "$1" ]
@@ -77,24 +113,7 @@ else
 	exit 1;
 fi
 
-# if $TEMPDIR does not exist, issue warning and exit
-if [ ! -d "$TEMPDIR" ]
-then
-	echo "Temporary directory $TEMPDIR does not exist"
-	echo "Please create it and re-run the script"
-	exit 1;
-else
-	# if $TEMPDIR exists, check if it is writable
-	if [ ! -w "$TEMPDIR" ]
-	then
-		echo "Temporary directory $TEMPDIR exists but is not writable"
-		echo "Please make it writable and re-run the script"
-		exit 1;
-	else
-		cd "$TEMPDIR" || exit 1;
-		echo "Temporary directory $TEMPDIR exists"
-	fi
-fi
+cd "$TEMPDIR" || exit 1;
 
 # check if the version this script has been asked to install is already installed
 # the professional version does not have 'professional' in its directory name
