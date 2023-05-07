@@ -72,7 +72,7 @@ then
 fi
 
 MATCHTARGZ='^\/.*\.tar\.gz$'
-MATCHURL='^http'
+MATCHURL='^http.*\.tar\.gz$'
 MATCHPATH=''
 # Check path/url supplied as a command line argument is for a .tar.gz file
 if [[ "$1" =~ $MATCHTARGZ ]]
