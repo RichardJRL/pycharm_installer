@@ -147,12 +147,12 @@ EXISTINGVERSIONS=$(find "$INSTALLDIR" -mindepth 1 -maxdepth 1 -type d -name 'pyc
 # Carry out a sed substitution on EXISTINGVERSIONS to remove the INSTALLDIR path
 EXISTINGVERSIONS=$(echo "$EXISTINGVERSIONS" | sed "s|$INSTALLDIR/||")
 # Iterate through all values stored in $EXISTINGVERSIONS and number them sequentially
-echo "The following versions of PyCharm are already installed: $EXISTINGVERSIONS"
+echo "The following versions of PyCharm are already installed:"
 VERSIONCOUNTER=1;
 for i in $EXISTINGVERSIONS
 do
 	echo "$VERSIONCOUNTER: $i"
-	VERSIONCOUNTER=$(($VERSIONCOUNTER+1))
+	((VERSIONCOUNTER++))
 done
 
 # extract the pycharm .tar.gz file to /usr/local/bin
@@ -175,8 +175,7 @@ find "$INSTALLDIR/$INSTALLEDNAME" -type f -perm 750 -execdir chmod o+rx {} \;
 # create or update link between $INSTALLDIR/pycharm and $INSTALLDIR/$INSTALLEDNAME/bin/pycharm.sh
 if [ -L $INSTALLDIR/pycharm ]
 then
-	# echo "Symbolic link $INSTALLDIR/pycharm already exists and points to PyCharm version $(ls -l $INSTALLDIR/pycharm | cut -d ' ' -f 12)"
-	echo "Symbolic link $INSTALLDIR/pycharm already exists and points to PyCharm version $(find "$INSTALLDIR" -type l -name pycharm | cut -d ' ' -f 12)"
+	echo "Symbolic link $INSTALLDIR/pycharm already exists and points to PyCharm version $(ls -l "$INSTALLDIR/pycharm" | cut -d ' ' -f 12)"
 	echo "Updating symbolic link $INSTALLDIR/pycharm to $INSTALLDIR/$INSTALLEDNAME/bin/pycharm.sh"
 	ln -sf "$INSTALLDIR/$INSTALLEDNAME/bin/pycharm.sh" "$INSTALLDIR/pycharm"
 else
@@ -232,7 +231,12 @@ echo "Added an entry for PyCharm to the 'Development' category of the applicatio
 if [ -n "$EXISTINGVERSIONS" ]
 then
 	echo "List of previously installed versions of PyCharm:"
-	echo "$EXISTINGVERSIONS"
+	VERSIONCOUNTER=1;
+	for i in $EXISTINGVERSIONS
+	do
+		echo "$VERSIONCOUNTER: $i"
+		((VERSIONCOUNTER++))
+	done
 fi
 echo "Current installed version is now $FILENAME and is ready to use"
 echo "It may be necessary to log-out and log-in again for the PyCharm entry in the Applicaiton Menu to become visible"
