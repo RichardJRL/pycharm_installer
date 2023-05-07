@@ -12,19 +12,22 @@
 # https://download.jetbrains.com/python/pycharm-professional-2021.2.3.tar.gz
 # https://download.jetbrains.com/python/pycharm-community-2021.2.3.tar.gz
 
-# User alterable variables:
+# User configurable variables:
 INSTALLDIR='/usr/local/bin'
 TEMPDIR='/tmp'
 
-if [ $(whoami) != 'root' ]
+# Check if the script is being run as the root user, otherwise exit
+if [ "$(whoami)" != 'root' ]
 then
 	echo 'Script must be run as root to install JetBrains PyCharm'
-	exit 1
+	exit 1;
 else
 	echo 'Excellent, you are running this script as root'
 fi
 
-if [ -z $1 ]
+# Check if the script has been supplied with a command line argument
+# If not, exit with a message
+if [ -z "$1" ]
 then
 	echo 'Script must be supplied with:'
 	echo 'EITHER: an absolute path to an already-downloaed PyCharm tar.gz archive'
@@ -32,18 +35,20 @@ then
 	exit 1;
 fi
 
-MATCHTARGZ='\.tar\.gz$'
+MATCHTARGZ='^\/.*\.tar\.gz$'
 MATCHURL='^http'
-MATCHPATH='^/'
-
+MATCHPATH=''
 # Check path/url supplied as a command line argument is for a .tar.gz file
 if [[ "$1" =~ $MATCHTARGZ ]]
 then
-	echo 'tar.gz detected, continuing...'
+	echo 'Absolute path to a tar.gz archive file detected, continuing...'
+elif [[ "$1" =~ $MATCHURL ]]
+then
+	echo 'URL detected, continuing...'
 else
-        echo 'Script must be supplied with:'
-        echo 'EITHER: an absolute path to an already-downloaed PyCharm tar.gz archive'
-        echo 'OR:     an URL to download the PyCharm tar.gz archive from'
+	echo 'Script must be supplied with:'
+	echo 'EITHER: an absolute path to an already-downloaed PyCharm tar.gz archive'
+	echo 'OR:     an URL to download the PyCharm tar.gz archive from'
 	exit 1;
 fi
 
@@ -51,15 +56,17 @@ fi
 FILENAME=''
 if [[ "$1" =~ $MATCHURL ]]
 then
-	FILENAME=$(basename $1 .tar.gz)
+	FILENAME=$(basename "$1" .tar.gz)
 	echo "Command line argument $1 identified as an URL"
 	echo "Setting download directory to $TEMPDIR"
+	echo "FILENAME is $FILENAME"
 	echo "Downloading $FILENAME now..."
-	wget -c -P "$TEMPDIR" $1
+	wget -c -P "$TEMPDIR" "$1"
 elif [[ "$1" =~ $MATCHPATH ]]
 then
 	echo "Command line argument '$1' identified as an absolute path"
-	FILENAME=$(basename $1 .tar.gz)
+	FILENAME=$(basename "$1" .tar.gz)
+	echo "FILENAME is $FILENAME"
 	echo "Copying $FILENAME to $TEMPDIR"
 	cp "$1" "$TEMPDIR/"
 else
@@ -70,21 +77,40 @@ else
 	exit 1;
 fi
 
-cd "$TEMPDIR"
+# if $TEMPDIR does not exist, issue warning and exit
+if [ ! -d "$TEMPDIR" ]
+then
+	echo "Temporary directory $TEMPDIR does not exist"
+	echo "Please create it and re-run the script"
+	exit 1;
+else
+	# if $TEMPDIR exists, check if it is writable
+	if [ ! -w "$TEMPDIR" ]
+	then
+		echo "Temporary directory $TEMPDIR exists but is not writable"
+		echo "Please make it writable and re-run the script"
+		exit 1;
+	else
+		cd "$TEMPDIR" || exit 1;
+		echo "Temporary directory $TEMPDIR exists"
+	fi
+fi
 
 # check if the version this script has been asked to install is already installed
 # the professional version does not have 'professional' in its directory name
 # whereas the community version does retain 'community' in its directory name
-INSTALLEDNAME=$(echo "$FILENAME" | sed 's/professional-//')
-if [ -z $INSTALLEDNAME ]
+# INSTALLEDNAME=$(echo "$FILENAME" | sed 's/professional-//')
+INSTALLEDNAME="${FILENAME//professional-/}"
+if [ -z "$INSTALLEDNAME" ]
 then
 	echo "The name of the installation directory is NULL. This is wrong; exiting..."
 	exit 1;
 fi
 echo "Installation base directory is $INSTALLDIR"
 echo "Installation subdirectory is $INSTALLEDNAME"
-ls "$INSTALLDIR" | egrep "^$INSTALLEDNAME\$"
-if [ $? -eq 0 ]
+# ls "$INSTALLDIR" | grep -E "^$INSTALLEDNAME\$"
+# if [ $? -eq 0 ]
+if ls "$INSTALLDIR" | grep -E "^$INSTALLEDNAME\$"
 then
 	echo "The version of PyCharm you are asking to be installed is already installed"
 	echo "If the current install of this version is broken, please manually delete it"
@@ -95,8 +121,20 @@ else
 	echo "Proceeding with installation..."
 fi
 
-# keep a list of versions of PyCharm already installed (see later for its use)
-EXISTINGVERSIONS=$(ls "$INSTALLDIR" | egrep 'pycharm-')
+# keep a list of versions of PyCharm already installed and inform the user
+# $EXISTINGVERSIONS is also used later on...
+# EXISTINGVERSIONS=$(ls "$INSTALLDIR" | grep -E 'pycharm-')
+EXISTINGVERSIONS=$(find "$INSTALLDIR" -mindepth 1 -maxdepth 1 -type d -name 'pycharm*')
+# Carry out a sed substitution on EXISTINGVERSIONS to remove the INSTALLDIR path
+EXISTINGVERSIONS=$(echo "$EXISTINGVERSIONS" | sed "s|$INSTALLDIR/||")
+# Iterate through all values stored in $EXISTINGVERSIONS and number them sequentially
+echo "The following versions of PyCharm are already installed: $EXISTINGVERSIONS"
+VERSIONCOUNTER=1;
+for i in $EXISTINGVERSIONS
+do
+	echo "$VERSIONCOUNTER: $i"
+	VERSIONCOUNTER=$(($VERSIONCOUNTER+1))
+done
 
 # extract the pycharm .tar.gz file to /usr/local/bin
 tar -xzf "$TEMPDIR/$FILENAME.tar.gz" -C "$INSTALLDIR"
@@ -106,9 +144,9 @@ rm "$TEMPDIR/$FILENAME.tar.gz"
 # by default, files extracted from the tar.gz archive have permissions 640
 # and directories extracted from the tar.gz archive have permissions 750
 
-cd "$INSTALLDIR"
+cd "$INSTALLDIR" || exit 1;
 chmod 755 "$INSTALLDIR/$INSTALLEDNAME"
-cd "$INSTALLDIR/$INSTALLEDNAME"
+cd "$INSTALLDIR/$INSTALLEDNAME" || exit 1;
 # directories are simple, all are 750, change all to 755
 find "$INSTALLDIR/$INSTALLEDNAME" -type d -execdir chmod o+rx {} \;
 # differentiate between executable and non-executable files
@@ -118,12 +156,13 @@ find "$INSTALLDIR/$INSTALLEDNAME" -type f -perm 750 -execdir chmod o+rx {} \;
 # create or update link between $INSTALLDIR/pycharm and $INSTALLDIR/$INSTALLEDNAME/bin/pycharm.sh
 if [ -L $INSTALLDIR/pycharm ]
 then
-	echo "Symbolic link $INSTALLDIR/pycharm already exists and points to PyCharm version $(ls -l $INSTALLDIR/pycharm | cut -d ' ' -f 12)"
+	# echo "Symbolic link $INSTALLDIR/pycharm already exists and points to PyCharm version $(ls -l $INSTALLDIR/pycharm | cut -d ' ' -f 12)"
+	echo "Symbolic link $INSTALLDIR/pycharm already exists and points to PyCharm version $(find "$INSTALLDIR" -type l -name pycharm | cut -d ' ' -f 12)"
 	echo "Updating symbolic link $INSTALLDIR/pycharm to $INSTALLDIR/$INSTALLEDNAME/bin/pycharm.sh"
-	ln -sf $INSTALLDIR/$INSTALLEDNAME/bin/pycharm.sh $INSTALLDIR/pycharm
+	ln -sf "$INSTALLDIR/$INSTALLEDNAME/bin/pycharm.sh" "$INSTALLDIR/pycharm"
 else
 	echo "Creating symbolic link $INSTALLDIR/pycharm to $INSTALLDIR/$INSTALLEDNAME/bin/pycharm.sh"
-        ln -sf $INSTALLDIR/$INSTALLEDNAME/bin/pycharm.sh $INSTALLDIR/pycharm
+        ln -sf "$INSTALLDIR/$INSTALLEDNAME/bin/pycharm.sh" "$INSTALLDIR/pycharm"
 fi
 
 # Create Application Launcher entry for PyCharm in folder /usr/local/share/applications/
@@ -171,7 +210,7 @@ rm "$DESKTOPFILE"
 echo "Added an entry for PyCharm to the 'Development' category of the application menu system"
 
 # Print list of previously installed versions that have been retained
-if [ ! -z $EXISTINGVERSIONS ]
+if [ -n "$EXISTINGVERSIONS" ]
 then
 	echo "List of previously installed versions of PyCharm:"
 	echo "$EXISTINGVERSIONS"
