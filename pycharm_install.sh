@@ -5,7 +5,7 @@
 
 # Command Line Arguments:
 # Requires:
-#   EITHER: an absolute path to an already-downloaed PyCharm tar.gz archive
+#   EITHER: an absolute path to an already-downloaded PyCharm tar.gz archive
 #   OR: an URL to download the PyCharm tar.gz archive from
 
 # Example URLs:
@@ -66,7 +66,7 @@ fi
 if [ -z "$1" ]
 then
 	echo 'Script must be supplied with:'
-	echo 'EITHER: an absolute path to an already-downloaed PyCharm tar.gz archive'
+	echo 'EITHER: an absolute path to an already-downloaded PyCharm tar.gz archive'
 	echo 'OR:     an URL to download the PyCharm tar.gz archive from'
 	exit 1;
 fi
@@ -83,7 +83,7 @@ then
 	echo 'URL detected, continuing...'
 else
 	echo 'Script must be supplied with:'
-	echo 'EITHER: an absolute path to an already-downloaed PyCharm tar.gz archive'
+	echo 'EITHER: an absolute path to an already-downloaded PyCharm tar.gz archive'
 	echo 'OR:     an URL to download the PyCharm tar.gz archive from'
 	exit 1;
 fi
@@ -108,7 +108,7 @@ then
 else
 	echo "Command line argument $1 NOT identified as either a path or an url"
         echo 'Script must be supplied with:'
-        echo 'EITHER: an absolute path to an already-downloaed PyCharm tar.gz archive'
+        echo 'EITHER: an absolute path to an already-downloaded PyCharm tar.gz archive'
         echo 'OR:     an URL to download the PyCharm tar.gz archive from'
 	exit 1;
 fi
