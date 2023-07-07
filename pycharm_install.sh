@@ -156,6 +156,7 @@ do
 done
 
 # extract the pycharm .tar.gz file to /usr/local/bin
+echo "Extracting $TEMPDIR/$FILENAME.tar.gz to $INSTALLDIR..."
 tar -xzf "$TEMPDIR/$FILENAME.tar.gz" -C "$INSTALLDIR"
 rm "$TEMPDIR/$FILENAME.tar.gz"
 
@@ -239,4 +240,4 @@ then
 	done
 fi
 echo "Current installed version is now $FILENAME and is ready to use"
-echo "It may be necessary to log-out and log-in again for the PyCharm entry in the Applicaiton Menu to become visible"
+echo "It may be necessary to log-out and log-in again for the PyCharm entry in the Application Menu to become visible"
